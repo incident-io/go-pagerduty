@@ -590,9 +590,10 @@ func (c *Client) checkResponse(resp *http.Response, err error) (*http.Response, 
 func (c *Client) getErrorFromResponse(resp *http.Response) APIError {
 	// check whether the error response is declared as JSON
 	if !strings.HasPrefix(resp.Header.Get("Content-Type"), "application/json") {
+		buf, _ := ioutil.ReadAll(resp.Body)
 		aerr := APIError{
 			StatusCode: resp.StatusCode,
-			message:    fmt.Sprintf("HTTP response with status code %d does not contain Content-Type: application/json", resp.StatusCode),
+			message:    fmt.Sprintf("HTTP response with status code %d does not contain Content-Type: application/json. body: %s", resp.StatusCode, string(buf)),
 		}
 
 		return aerr
