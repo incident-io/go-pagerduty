@@ -100,6 +100,10 @@ type WebhookResponse struct {
 	WebhookSubscription WebhookSubscription `json:"webhook_subscription"`
 }
 
+type ListWebhooksResponse struct {
+	WebhookSubscriptions []WebhookSubscription `json:"webhook_subscriptions"`
+}
+
 type UpdateWebhookOptions struct {
 	// pointer fields here are used to allow us to omit certain fields when updating
 	Active      *bool    `json:"active,omitempty"`
@@ -163,4 +167,31 @@ func (c *Client) GetWebhookWithContext(ctx context.Context, id string) (*Webhook
 
 	return &ii.WebhookSubscription, nil
 
+}
+
+// ListWebhooksWithContext lists all existing webhooks for that token
+func (c *Client) ListWebhooksWithContext(ctx context.Context) (*[]WebhookSubscription, error) {
+	resp, err := c.get(ctx, "/webhook_subscriptions")
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ii ListWebhooksResponse
+	if err = c.decodeJSON(resp, &ii); err != nil {
+		return nil, err
+	}
+
+	return &ii.WebhookSubscriptions, nil
+}
+
+// DeleteWebhookWithContext deletes a webhook by ID
+func (c *Client) DeleteWebhookWithContext(ctx context.Context, id string) error {
+	_, err := c.delete(ctx, "/webhook_subscriptions/"+id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
