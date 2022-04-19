@@ -242,3 +242,106 @@ func TestWebhook_Get(t *testing.T) {
 	}
 	testEqual(t, want, res)
 }
+
+func TestWebhook_List(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/webhook_subscriptions", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+
+		_, _ = w.Write([]byte(
+			`{
+				"webhook_subscriptions": [
+					{		
+						"active": true,
+						"delivery_method": {
+							"type": "http_delivery_method",
+							"url": "http://my-url.com"
+						},
+						"description": "my new webhook",
+						"events": [
+							"incident.triggered"
+						],
+						"filter": {
+							"id": null,
+							"type": "account_reference"
+						},
+						"id": "1",
+						"type": "webhook_subscription"
+					},
+					{		
+						"active": false,
+						"delivery_method": {
+							"type": "http_delivery_method",
+							"url": "http://my-url.com"
+						},
+						"description": "my new webhook",
+						"events": [
+							"incident.triggered"
+						],
+						"filter": {
+							"id": null,
+							"type": "account_reference"
+						},
+						"id": "2",
+						"type": "webhook_subscription"
+					}
+				]
+			}`))
+	})
+
+	client := defaultTestClient(server.URL, "foo")
+
+	res, err := client.ListWebhooksWithContext(context.Background())
+
+	want := &[]WebhookSubscription{
+
+		{ID: "1",
+			Type:   "webhook_subscription",
+			Active: true,
+			DeliveryMethod: DeliveryMethod{
+				Url:  "http://my-url.com",
+				Type: "http_delivery_method",
+			},
+			Description: "my new webhook",
+			Events:      []string{"incident.triggered"},
+			Filter: Filter{
+				Type: "account_reference",
+			}},
+		{ID: "2",
+			Type:   "webhook_subscription",
+			Active: false,
+			DeliveryMethod: DeliveryMethod{
+				Url:  "http://my-url.com",
+				Type: "http_delivery_method",
+			},
+			Description: "my new webhook",
+			Events:      []string{"incident.triggered"},
+			Filter: Filter{
+				Type: "account_reference",
+			}},
+	}
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	testEqual(t, want, res)
+}
+
+func TestWebhook_Delete(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/webhook_subscriptions/1", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "DELETE")
+	})
+
+	client := defaultTestClient(server.URL, "foo")
+
+	err := client.DeleteWebhookWithContext(context.Background(), "1")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
