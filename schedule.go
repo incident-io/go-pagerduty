@@ -74,6 +74,11 @@ type ListSchedulesOptions struct {
 
 	Query    string   `url:"query,omitempty"`
 	Includes []string `url:"include,omitempty,brackets"`
+
+	// TimeZone should be a timezone name like `Etc/UTC` or `America/New_York`. If
+	// set, times will be rendered in this zone. Otherwise they will use the user
+	// or account default.
+	TimeZone string `url:"time_zone,omitempty"`
 }
 
 // ListSchedulesResponse is the data structure returned from calling the ListSchedules API endpoint.
